@@ -3,7 +3,6 @@ import { ExamSchema } from "@/libs/schemas/examSchema";
 import Exam from "@/models/exam";
 import { handleError } from "@/utils/errorHandler";
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 export async function OPTIONS() {
   return NextResponse.json({}, { 
