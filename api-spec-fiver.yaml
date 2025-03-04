@@ -1,0 +1,442 @@
+openapi: 3.0.0
+info:
+  title: Exam Management API
+  version: 1.0.0
+  description: API untuk mengelola exams, questions, sections, dan passages.
+
+servers:
+  - url: http://127.0.0.1:3000/api
+    description: Local development server
+
+paths:
+  /exams:
+    get:
+      summary: Mendapatkan semua exams
+      responses:
+        '200':
+          description: Daftar exams berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Exam'
+        '500':
+          description: Gagal mengambil exams
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+    post:
+      summary: Membuat exam baru
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamInput'
+      responses:
+        '201':
+          description: Exam berhasil dibuat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+        '500':
+          description: Gagal membuat exam
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+  /exams/{id}:
+    get:
+      summary: Mendapatkan exam berdasarkan ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Exam berhasil diambil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+        '404':
+          description: Exam tidak ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Gagal mengambil exam
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+    put:
+      summary: Memperbarui exam berdasarkan ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamInput'
+      responses:
+        '200':
+          description: Exam berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+        '404':
+          description: Exam tidak ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Gagal memperbarui exam
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+    delete:
+      summary: Menghapus exam berdasarkan ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Exam berhasil dihapus
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Exam tidak ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Gagal menghapus exam
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+  /questions:
+    get:
+      summary: Mendapatkan semua questions
+      responses:
+        '200':
+          description: Daftar questions berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Question'
+        '500':
+          description: Gagal mengambil questions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+    post:
+      summary: Membuat question baru
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionInput'
+      responses:
+        '201':
+          description: Question berhasil dibuat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '500':
+          description: Gagal membuat question
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+  /sections:
+    get:
+      summary: Mendapatkan semua sections
+      responses:
+        '200':
+          description: Daftar sections berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Section'
+        '500':
+          description: Gagal mengambil sections
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+  /passages:
+    get:
+      summary: Mendapatkan semua passages
+      responses:
+        '200':
+          description: Daftar passages berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Passage'
+        '500':
+          description: Gagal mengambil passages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+components:
+  schemas:
+    Exam:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        sections:
+          type: array
+          items:
+            type: string
+        totalQuestions:
+          type: number
+        totalTime:
+          type: number
+        difficulty:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+
+    ExamInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        sections:
+          type: array
+          items:
+            type: string
+        totalQuestions:
+          type: number
+        totalTime:
+          type: number
+        difficulty:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+
+    Question:
+      type: object
+      properties:
+        _id:
+          type: string
+        questionType:
+          type: string
+        questionSubtype:
+          type: string
+        text:
+          type: string
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              isCorrect:
+                type: boolean
+              answerNote:
+                type: string
+        difficulty:
+          type: string
+        severity:
+          type: string
+        sequenceNumber:
+          type: number
+        tags:
+          type: array
+          items:
+            type: string
+        passage:
+          type: string
+        section:
+          type: string
+
+    QuestionInput:
+      type: object
+      properties:
+        questionType:
+          type: string
+        questionSubtype:
+          type: string
+        text:
+          type: string
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              isCorrect:
+                type: boolean
+              answerNote:
+                type: string
+        difficulty:
+          type: string
+        severity:
+          type: string
+        sequenceNumber:
+          type: number
+        tags:
+          type: array
+          items:
+            type: string
+        passage:
+          type: string
+        section:
+          type: string
+
+    Section:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        questions:
+          type: array
+          items:
+            type: string
+        totalQuestions:
+          type: number
+        estimatedTime:
+          type: number
+
+    Passage:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        text:
+          type: string
+        questions:
+          type: array
+          items:
+            type: string
+        difficulty:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string

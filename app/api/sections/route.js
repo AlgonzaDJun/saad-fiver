@@ -1,24 +1,12 @@
 import connectDB from "@/libs/db";
-import { ExamSchema } from "@/libs/schemas/examSchema";
-import Exam from "@/models/exam";
+import { SectionSchema } from "@/libs/schemas/sectionSchema";
+import Section from "@/models/section";
 import { handleError } from "@/utils/errorHandler";
 import { NextResponse } from "next/server";
-import { z } from "zod";
-
-export async function OPTIONS() {
-  return NextResponse.json({}, { 
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',  // Izinkan semua origin (bisa diganti ke domain spesifik)
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    }
-  });
-}
 
 export const GET = async () => {
   await connectDB();
-  const data = await Exam.find().sort({
+  const data = await Section.find().sort({
     createdAt: -1,
   });
 
@@ -33,19 +21,20 @@ export const POST = async (request) => {
   try {
     await connectDB();
     const body = await request.json();
-    const validatedData = ExamSchema.safeParse(body);
+
+    const validatedData = SectionSchema.safeParse(body);
 
     if (!validatedData.success) {
       return handleError(
         {
           message: "Validation failed",
-          errors: validatedData.error.errors, // Detail error validasi
+          errors: validatedData.error.errors,
         },
         400
       );
     }
 
-    await Exam.create(validatedData.data);
+    await Section.create(validatedData.data);
 
     return NextResponse.json(
       {
@@ -62,7 +51,7 @@ export const POST = async (request) => {
         error: error.message,
       },
       {
-        status: 400,
+        status: 500,
       }
     );
   }
