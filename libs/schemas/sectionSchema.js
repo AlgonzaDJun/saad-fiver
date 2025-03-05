@@ -7,4 +7,5 @@ export const SectionSchema = z.object({
   type: z.string().min(1, "type is required"),
   estimatedTime: z.number().gte(1, "estimatedTime must be greater than 0"),
   questions: z.array(z.string()).optional(),
+  exam: z.string().optional()
 });

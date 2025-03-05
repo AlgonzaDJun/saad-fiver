@@ -1,14 +1,19 @@
 import connectDB from "@/libs/db";
 import { SectionSchema } from "@/libs/schemas/sectionSchema";
+import Exam from "@/models/exam";
 import Section from "@/models/section";
 import { handleError } from "@/utils/errorHandler";
 import { NextResponse } from "next/server";
 
 export const GET = async () => {
   await connectDB();
-  const data = await Section.find().sort({
-    createdAt: -1,
-  });
+  const data = await Section.find()
+    .populate("passages")
+    .populate("questions")
+    .sort({
+      createdAt: -1,
+    })
+    .exec();
 
   return NextResponse.json({
     data,
@@ -34,7 +39,18 @@ export const POST = async (request) => {
       );
     }
 
-    await Section.create(validatedData.data);
+    const section = await Section.create(validatedData.data);
+
+    await Exam.updateOne(
+      {
+        _id: validatedData.data.exam,
+      },
+      {
+        $push: {
+          sections: section._id,
+        },
+      }
+    );
 
     return NextResponse.json(
       {

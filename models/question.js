@@ -1,3 +1,6 @@
+// import Passage from "./passage";
+// import Section from "./section";
+
 const { Schema, default: mongoose } = require("mongoose");
 
 const QuestionSchema = new Schema(

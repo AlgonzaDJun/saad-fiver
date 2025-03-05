@@ -5,19 +5,22 @@ import { handleError } from "@/utils/errorHandler";
 import { NextResponse } from "next/server";
 
 export async function OPTIONS() {
-  return NextResponse.json({}, { 
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',  // Izinkan semua origin (bisa diganti ke domain spesifik)
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+  return NextResponse.json(
+    {},
+    {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*", // Izinkan semua origin (bisa diganti ke domain spesifik)
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
     }
-  });
+  );
 }
 
 export const GET = async () => {
   await connectDB();
-  const data = await Exam.find().sort({
+  const data = await Exam.find().populate("sections").sort({
     createdAt: -1,
   });
 

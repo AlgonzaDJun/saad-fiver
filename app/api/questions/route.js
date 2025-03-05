@@ -1,5 +1,6 @@
 import connectDB from "@/libs/db";
 import { QuestionSchema } from "@/libs/schemas/questionSchema";
+import Passage from "@/models/passage";
 import Question from "@/models/question";
 import Section from "@/models/section";
 import { handleError } from "@/utils/errorHandler";
@@ -38,11 +39,10 @@ export const POST = async (request) => {
 
     const checkSequence = await Question.findOne({
       section: validatedData.data.section,
-      sequenceNumber: validatedData.data.sequenceNumber
+      sequenceNumber: validatedData.data.sequenceNumber,
     });
 
     // TODO : check sequence number on passage
-    
 
     // check sequence number tidak boleh duplikat
     if (checkSequence) {
@@ -56,6 +56,7 @@ export const POST = async (request) => {
 
     const question = await Question.create(validatedData.data);
 
+    // check if section exist and passage exist
     await Section.updateOne(
       {
         _id: body.section,
@@ -66,6 +67,19 @@ export const POST = async (request) => {
         },
       }
     );
+
+    if (validatedData.data.passage) {
+      await Section.updateOne(
+        {
+          _id: body.section,
+        },
+        {
+          $push: {
+            passages: validatedData.data.passage,
+          },
+        }
+      );
+    }
 
     //TODO : push question to passage
     // const passage = await Question.updateOne(

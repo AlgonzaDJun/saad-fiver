@@ -1,3 +1,6 @@
+import Passage from "./passage";
+import Question from "./question";
+
 const { Schema, default: mongoose } = require("mongoose");
 
 const SectionSchema = new Schema(
@@ -13,6 +16,12 @@ const SectionSchema = new Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Question",
+      },
+    ],
+    passages: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Passage",
       },
     ],
     estimatedTime: { type: Number, required: true },
