@@ -6,15 +6,15 @@ import { handleError } from "@/utils/errorHandler";
 import { NextResponse } from "next/server";
 
 export const GET = async () => {
-    const data = await Question.find().sort({
-        createdAt: -1,
-    });
+  const data = await Question.find().sort({
+    createdAt: -1,
+  });
 
-    return NextResponse.json({
-        data,
-        success: true,
-        message: "Success get data",
-    });
+  return NextResponse.json({
+    data,
+    success: true,
+    message: "Success get data",
+  });
 };
 
 export const POST = async (request) => {
@@ -24,7 +24,7 @@ export const POST = async (request) => {
 
     const validatedData = QuestionSchema.safeParse(body);
 
-    // dalam 1 section tidak boleh ada 
+    // dalam 1 section tidak boleh ada
 
     if (!validatedData.success) {
       return handleError(
@@ -36,19 +36,38 @@ export const POST = async (request) => {
       );
     }
 
+    const checkSequence = await Question.findOne({
+      section: validatedData.data.section,
+      sequenceNumber: validatedData.data.sequenceNumber
+    });
+
+    // TODO : check sequence number on passage
+    
+
+    // check sequence number tidak boleh duplikat
+    if (checkSequence) {
+      return handleError(
+        {
+          message: "Sequence already exist, please use another sequence",
+        },
+        400
+      );
+    }
+
     const question = await Question.create(validatedData.data);
 
     await Section.updateOne(
-        {
-            _id: body.section
+      {
+        _id: body.section,
+      },
+      {
+        $push: {
+          questions: question._id,
         },
-        {
-            $push: {
-                questions: question._id
-            }
-        }
+      }
     );
 
+    //TODO : push question to passage
     // const passage = await Question.updateOne(
     //     {
     //         _id: validatedData.data.passageId
