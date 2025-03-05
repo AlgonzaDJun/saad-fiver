@@ -22,7 +22,10 @@ export const GET = async (req, { params }) => {
       );
     }
 
-    const data = await Section.findById(id);
+    const data = await Section.findById(id)
+      .populate("passages")
+      .populate("questions")
+      .exec();
 
     if (!data) {
       return NextResponse.json(

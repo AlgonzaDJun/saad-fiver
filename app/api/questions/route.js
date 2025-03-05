@@ -69,13 +69,13 @@ export const POST = async (request) => {
     );
 
     if (validatedData.data.passage) {
-      await Section.updateOne(
+      await Passage.updateOne(
         {
-          _id: body.section,
+          _id: validatedData.data.passage,
         },
         {
           $push: {
-            passages: validatedData.data.passage,
+            questions: question._id,
           },
         }
       );

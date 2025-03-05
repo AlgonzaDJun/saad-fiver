@@ -14,6 +14,6 @@ export const QuestionSchema = z.object({
   sequenceNumber: z.number().gte(1, "sequenceNumber must be greater than 0"),
   answerNote: z.string().min(1, "answerNote is required"),
   tags: z.array(z.string()).optional(),
-  passage: z.string().optional(),
-  section: z.string().optional(),
+  passage: z.string().nullable().optional(),
+  section: z.string().nullable().optional(),
 });

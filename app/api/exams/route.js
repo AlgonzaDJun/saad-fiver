@@ -22,7 +22,7 @@ export const GET = async () => {
   await connectDB();
   const data = await Exam.find().populate("sections").sort({
     createdAt: -1,
-  });
+  }).exec();
 
   return NextResponse.json({
     data,
