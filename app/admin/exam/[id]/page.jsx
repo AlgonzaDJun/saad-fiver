@@ -50,9 +50,9 @@ const page = ({ params }) => {
   ]);
 
   useEffect(() => {
-    if (data) {
-      // setSections(data.data.sections);
-      console.log(data)
+    if (data && data.data) {
+      setSections(data.data.sections);
+      // console.log(data)
     }
   }, [data]);
 
@@ -75,7 +75,7 @@ const page = ({ params }) => {
     // <div className="min-h-screen bg-gray-50">
     <Layout>
       <div className="max-w-6xl mx-auto p-4">
-      {isLoading && <LoadingScreen />}
+        {isLoading && <LoadingScreen />}
 
         {/* Header with buttons */}
         <div className="flex flex-col md:flex-row justify-between items-center py-4 border-b mb-6">
@@ -125,115 +125,125 @@ const page = ({ params }) => {
 
         {/* Sections */}
         <div className="space-y-4 overflow-auto md:max-h-[calc(100vh-150px)]">
-          {sections.map((section) => (
-            <div
-              key={section.id}
-              className="bg-white rounded-lg shadow p-4 md:p-6"
-            >
-              <div className="flex flex-col md:flex-row items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="text-gray-400 mt-1">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="4" y1="9" x2="20" y2="9"></line>
-                      <line x1="4" y1="15" x2="20" y2="15"></line>
-                      <line x1="10" y1="3" x2="8" y2="21"></line>
-                      <line x1="16" y1="3" x2="14" y2="21"></line>
-                    </svg>
-                  </div>
-                  <div className="bg-indigo-100 text-indigo-800 w-8 h-8 rounded-full flex items-center justify-center">
-                    {section.number}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-medium text-gray-800">
-                      {section.title}
-                    </h3>
-                    <p className="text-gray-500 mt-2">{section.description}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 mt-4 md:mt-0">
-                  <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-lg text-sm">
-                    {section.type}
-                  </span>
-                  <button className="text-gray-400 hover:text-indigo-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                    </svg>
-                  </button>
-                  <button
-                    className="text-gray-400 hover:text-red-600"
-                    onClick={() => deleteSection(section.id)}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="3 6 5 6 21 6"></polyline>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                      <line x1="10" y1="11" x2="10" y2="17"></line>
-                      <line x1="14" y1="11" x2="14" y2="17"></line>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* Manage Questions Button */}
-              <Link
-                href={
-                  section.type === "reading_comprehension"
-                    ? `/admin/section/${section.id}`
-                    : `/admin/section/${section.id}/logical-question`
-                }
-              >
-                <div className="mt-6">
-                  <button className="w-full border border-indigo-200 text-indigo-600 hover:bg-indigo-50 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                    Manage Questions
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="7" y1="17" x2="17" y2="7"></line>
-                      <polyline points="7 7 17 7 17 17"></polyline>
-                    </svg>
-                  </button>
-                </div>
-              </Link>
+          {sections.length === 0 ? (
+            <div className="bg-white rounded-lg shadow p-4 md:p-6">
+              <h3 className="text-xl font-medium text-gray-800">
+                No Section Found
+              </h3>
             </div>
-          ))}
+          ) : (
+            sections.map((section) => (
+              <div
+                key={section.id}
+                className="bg-white rounded-lg shadow p-4 md:p-6"
+              >
+                <div className="flex flex-col md:flex-row items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="text-gray-400 mt-1">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <line x1="4" y1="9" x2="20" y2="9"></line>
+                        <line x1="4" y1="15" x2="20" y2="15"></line>
+                        <line x1="10" y1="3" x2="8" y2="21"></line>
+                        <line x1="16" y1="3" x2="14" y2="21"></line>
+                      </svg>
+                    </div>
+                    <div className="bg-indigo-100 text-indigo-800 w-8 h-8 rounded-full flex items-center justify-center">
+                      {section.number}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-medium text-gray-800">
+                        {section.title}
+                      </h3>
+                      <p className="text-gray-500 mt-2">
+                        {section.description}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-4 md:mt-0">
+                    <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-lg text-sm">
+                      {section.type}
+                    </span>
+                    <button className="text-gray-400 hover:text-indigo-600">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                      </svg>
+                    </button>
+                    <button
+                      className="text-gray-400 hover:text-red-600"
+                      onClick={() => deleteSection(section.id)}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Manage Questions Button */}
+                <Link
+                  href={
+                    section.type === "reading_comprehension"
+                      ? `/admin/section/${section.id}`
+                      : `/admin/section/${section.id}/logical-question`
+                  }
+                >
+                  <div className="mt-6">
+                    <button className="w-full border border-indigo-200 text-indigo-600 hover:bg-indigo-50 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                      Manage Questions
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <line x1="7" y1="17" x2="17" y2="7"></line>
+                        <polyline points="7 7 17 7 17 17"></polyline>
+                      </svg>
+                    </button>
+                  </div>
+                </Link>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

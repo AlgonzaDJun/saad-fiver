@@ -10,10 +10,12 @@ import LoadingScreen from "../components/LoadingScreen";
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 export default function page() {
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading, mutate } = useSWR(
     process.env.NEXT_PUBLIC_API_URL + "/exams",
     fetcher
   );
+
+  const [errorMessage, setErrorMessage] = useState([]);
 
   const [exams, setExams] = useState([
     {
@@ -23,6 +25,22 @@ export default function page() {
     },
   ]);
 
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    totalQuestions: 0,
+    totalTime: 0,
+    difficulty: "easy",
+  });
+
+  const handleChange = (e) => {
+    const { name, value, type } = e.target;
+    setForm({
+      ...form,
+      [name]: type === "number" ? parseInt(value) : value,
+    });
+  };
+
   useEffect(() => {
     if (data) {
       setExams(data.data); // Asumsikan `data` adalah array dari API
@@ -31,6 +49,28 @@ export default function page() {
   }, [data]);
 
   const [showModal, setShowModal] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/exams`, form);
+
+      mutate();
+      setErrorMessage([]);
+      setForm({ title: "", description: "", totalQuestions: 0, totalTime: 0 });
+      setShowModal(false);
+    } catch (error) {
+      setShowModal(false);
+
+      // Reset form
+      console.error("Error submitting exam:", error.response.data);
+
+      if (error.response) {
+        setErrorMessage(error.response.data.errors);
+      }
+    }
+  };
 
   return (
     <Layout>
@@ -68,6 +108,16 @@ export default function page() {
           </div>
 
           {error && <p>there is a problem, please reload or contact admin</p>}
+
+          {errorMessage &&
+            errorMessage.map((error) => (
+              <div
+                key={error}
+                className="bg-red-100 text-red-600 p-4 rounded-lg mb-4"
+              >
+                Error: {error.message}
+              </div>
+            ))}
 
           {/* Exam Grid */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -163,7 +213,7 @@ export default function page() {
                       </svg>
                     </button>
                   </div>
-                  <form className="space-y-4">
+                  <form className="space-y-4" onSubmit={handleSubmit}>
                     <div>
                       <label className="block mb-1 font-medium">
                         Exam Title
@@ -172,6 +222,9 @@ export default function page() {
                         type="text"
                         className="w-full p-2 border border-gray-300 rounded-lg"
                         placeholder="Enter exam title"
+                        value={form.title}
+                        name="title"
+                        onChange={handleChange}
                       />
                     </div>
                     <div>
@@ -181,9 +234,60 @@ export default function page() {
                       <textarea
                         className="w-full p-2 border border-gray-300 rounded-lg"
                         rows="3"
+                        name="description"
+                        value={form.description}
+                        onChange={handleChange}
                         placeholder="Enter exam description"
                       />
                     </div>
+
+                    {/* total questions */}
+                    <div>
+                      <label className="block mb-1 font-medium">
+                        Total Questions
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-2 border border-gray-300 rounded-lg"
+                        placeholder="Enter total questions"
+                        value={form.totalQuestions}
+                        name="totalQuestions"
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    {/* total time */}
+                    <div>
+                      <label className="block mb-1 font-medium">
+                        Total Time
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-2 border border-gray-300 rounded-lg"
+                        placeholder="Enter total time"
+                        value={form.totalTime}
+                        name="totalTime"
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    {/* difficulty */}
+                    <div>
+                      <label className="block mb-1 font-medium">
+                        Difficulty
+                      </label>
+                      <select
+                        className="w-full p-2 border border-gray-300 rounded-lg"
+                        name="difficulty"
+                        value={form.difficulty}
+                        onChange={handleChange}
+                      >
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                      </select>
+                    </div>
+
                     <div className="flex justify-end">
                       <button
                         type="submit"
