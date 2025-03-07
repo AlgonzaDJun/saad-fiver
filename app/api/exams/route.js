@@ -20,7 +20,7 @@ export async function OPTIONS() {
 
 export const GET = async () => {
   await connectDB();
-  const data = await Exam.find().populate("sections").sort({
+  const data = await Exam.find().sort({
     createdAt: -1,
   }).exec();
 

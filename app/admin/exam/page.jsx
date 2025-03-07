@@ -1,28 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Layout from "../components/SidebarNew";
 import Link from "next/link";
+import axios from "axios";
+import useSWR from "swr";
+import LoadingScreen from "../components/LoadingScreen";
+
+const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 export default function page() {
-  const [exams] = useState([
+  const { data, error, isLoading } = useSWR(
+    process.env.NEXT_PUBLIC_API_URL + "/exams",
+    fetcher
+  );
+
+  const [exams, setExams] = useState([
     {
       id: 1,
-      title: "Test Exam 1",
-      description: "This is a exam to k",
-    },
-    {
-      id: 2,
-      title: "Test Exam 2",
+      title: "Example Exam",
       description: "This is a exam to k",
     },
   ]);
+
+  useEffect(() => {
+    if (data) {
+      setExams(data.data); // Asumsikan `data` adalah array dari API
+      // console.log(data);
+    }
+  }, [data]);
 
   const [showModal, setShowModal] = useState(false);
 
   return (
     <Layout>
       <div className="min-h-screen bg-gray-50 p-6 text-black">
+        {isLoading && <LoadingScreen />}
+
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex justify-between items-start mb-8">
@@ -53,10 +67,12 @@ export default function page() {
             </button>
           </div>
 
+          {error && <p>there is a problem, please reload or contact admin</p>}
+
           {/* Exam Grid */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {exams.map((exam) => (
-              <div key={exam.id} className="bg-white rounded-lg shadow-sm p-6">
+              <div key={exam._id} className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex justify-between items-start mb-4">
                   <h2 className="text-lg font-medium">{exam.title}</h2>
                   <div className="flex gap-2">
@@ -97,7 +113,8 @@ export default function page() {
                 </div>
                 <p className="text-gray-600 mb-4">{exam.description}</p>
                 <Link
-                  href={`/admin/exam/${exam.id}`}
+                  href={`/admin/exam/${exam._id}`}
+                  key={exam._id}
                   className="text-indigo-600 hover:text-indigo-700 flex items-center gap-1 text-sm font-medium"
                 >
                   Manage

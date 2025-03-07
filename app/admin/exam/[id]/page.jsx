@@ -1,10 +1,21 @@
 "use client";
-import React, { use, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import Layout from "../../components/SidebarNew";
 import Link from "next/link";
+import useSWR from "swr";
+import axios from "axios";
+import LoadingScreen from "../../components/LoadingScreen";
+
+const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 const page = ({ params }) => {
   const unwrappedParams = use(params);
+  const { data, error, isLoading } = useSWR(
+    process.env.NEXT_PUBLIC_API_URL + "/exams/" + unwrappedParams.id,
+    fetcher
+  );
+
+  // console.log(data)
   const [formData, setFormData] = useState({
     name: "",
     type: "",
@@ -31,34 +42,19 @@ const page = ({ params }) => {
     {
       id: 1,
       number: 1,
-      title: "Test Section",
-      type: "reading_comprehension",
-      description: "RKJLn kajkjasdn",
-    },
-    {
-      id: 2,
-      number: 2,
-      title: "Reading Analysis1",
-      type: "reading_comprehension",
-      description: "This section tests comprehension skills1",
-    },
-    {
-      id: 3,
-      number: 3,
-      title: "Reading Analysis",
+      title: "Example section",
       type: "reading_comprehension",
       description:
-        "nemo voluptates omnis architecto, quisquam ipsam obcaecati sed accusantium magnam nostrum modi minima dolore! Reprehenderit, labore assumenda!",
-    },
-    {
-      id: 4,
-      number: 4,
-      title: "Logical Reasoning",
-      type: "logical_reasoning",
-      description:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet culpa, laborum reiciendis itaque, ",
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum, rem voluptatem?",
     },
   ]);
+
+  useEffect(() => {
+    if (data) {
+      // setSections(data.data.sections);
+      console.log(data)
+    }
+  }, [data]);
 
   const addNewSection = () => {
     const newSection = {
@@ -79,6 +75,8 @@ const page = ({ params }) => {
     // <div className="min-h-screen bg-gray-50">
     <Layout>
       <div className="max-w-6xl mx-auto p-4">
+      {isLoading && <LoadingScreen />}
+
         {/* Header with buttons */}
         <div className="flex flex-col md:flex-row justify-between items-center py-4 border-b mb-6">
           <div></div>
