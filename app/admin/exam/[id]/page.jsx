@@ -10,10 +10,13 @@ const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 const page = ({ params }) => {
   const unwrappedParams = use(params);
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading, mutate } = useSWR(
     process.env.NEXT_PUBLIC_API_URL + "/exams/" + unwrappedParams.id,
     fetcher
   );
+
+  const [errorMessage, setErrorMessage] = useState([]);
+  const [editSection, setEditSection] = useState(false);
 
   // console.log(data)
   const [formData, setFormData] = useState({
@@ -34,8 +37,52 @@ const page = ({ params }) => {
     });
   };
 
-  const handdleSubmit = () => {
-    console.log(formData);
+  const handdleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/sections`, formData);
+
+      mutate();
+      setErrorMessage([]);
+      setFormData({ name: "", type: "", description: "", estimatedTime: 1 });
+      // setShowModal(false);
+      document.getElementById("close_modal").click();
+    } catch (error) {
+      // setShowModal(false);
+      document.getElementById("close_modal").click();
+
+      // Reset formData
+      console.error("Error submitting sections:", error.response.data);
+
+      if (error.response) {
+        setErrorMessage(error.response.data.errors);
+      }
+    }
+  };
+
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/sections/${formData.id}`,
+        formData
+      );
+      mutate();
+      setErrorMessage([]);
+      setFormData({ name: "", type: "", description: "", estimatedTime: 1 });
+      // setShowModal(false);
+      document.getElementById("close_modal").click();
+    } catch (error) {
+      // setShowModal(false);
+      document.getElementById("close_modal").click();
+
+      // Reset formData
+      console.error("Error submitting sections:", error.response.data);
+
+      if (error.response) {
+        setErrorMessage(error.response.data.errors);
+      }
+    }
   };
 
   const [sections, setSections] = useState([
@@ -71,6 +118,19 @@ const page = ({ params }) => {
     setSections(sections.filter((section) => section.id !== id));
   };
 
+  const handleEditModal = (section) => {
+    setEditSection(true);
+    setFormData({
+      id: section._id,
+      name: section.name,
+      type: section.type,
+      description: section.description,
+      estimatedTime: section.estimatedTime,
+      exam: unwrappedParams.id,
+    });
+    document.getElementById("my_modal_5").showModal();
+  };
+
   return (
     // <div className="min-h-screen bg-gray-50">
     <Layout>
@@ -82,7 +142,17 @@ const page = ({ params }) => {
           <div></div>
           <div className="flex flex-col md:flex-row gap-3 mt-4 md:mt-0">
             <button
-              onClick={() => document.getElementById("my_modal_5").showModal()}
+              onClick={() => {
+                // empty form data
+                setEditSection(false);
+                setFormData({
+                  name: "",
+                  type: "",
+                  description: "",
+                  estimatedTime: 1,
+                });
+                document.getElementById("my_modal_5").showModal();
+              }}
               className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg transition-colors w-full md:w-auto justify-center"
             >
               <svg
@@ -122,6 +192,16 @@ const page = ({ params }) => {
             </button>
           </div>
         </div>
+
+        {errorMessage &&
+          errorMessage.map((error) => (
+            <div
+              key={error}
+              className="bg-red-100 text-red-600 p-4 rounded-lg mb-4"
+            >
+              Error: {error.message}
+            </div>
+          ))}
 
         {/* Sections */}
         <div className="space-y-4 overflow-auto md:max-h-[calc(100vh-150px)]">
@@ -173,7 +253,10 @@ const page = ({ params }) => {
                     <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-lg text-sm">
                       {section.type}
                     </span>
-                    <button className="text-gray-400 hover:text-indigo-600">
+                    <button
+                      className="text-gray-400 hover:text-indigo-600 cursor-pointer"
+                      onClick={() => handleEditModal(section)}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="18"
@@ -217,8 +300,8 @@ const page = ({ params }) => {
                 <Link
                   href={
                     section.type === "reading_comprehension"
-                      ? `/admin/section/${section.id}`
-                      : `/admin/section/${section.id}/logical-question`
+                      ? `/admin/section/${section._id}`
+                      : `/admin/section/${section._id}/logical-question`
                   }
                 >
                   <div className="mt-6">
@@ -254,7 +337,10 @@ const page = ({ params }) => {
         <div className="modal-box space-y-3">
           <form method="dialog">
             {/* if there is a button in form, it will close the modal */}
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+            <button
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              id="close_modal"
+            >
               ✕
             </button>
           </form>
@@ -308,9 +394,9 @@ const page = ({ params }) => {
 
             <button
               className="btn btn-outline btn-primary w-full"
-              onClick={handdleSubmit}
+              onClick={editSection ? handleEdit : handdleSubmit}
             >
-              Submit
+              {editSection ? "Edit Section" : "Create Section"}
             </button>
           </div>
         </div>

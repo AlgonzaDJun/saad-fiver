@@ -22,7 +22,12 @@ export const GET = async (req, { params }) => {
       );
     }
 
-    const data = await Exam.findById(id).populate("sections").exec();
+    const data = await Exam.findById(id)
+      .populate("sections")
+      .sort({
+        createdAt: -1,
+      })
+      .exec();
 
     if (!data) {
       return NextResponse.json(
