@@ -32,21 +32,21 @@ const page = ({ params }) => {
       id: 1,
       number: 1,
       title: "Test Section",
-      type: "READING_COMPREHENSION",
+      type: "reading_comprehension",
       description: "RKJLn kajkjasdn",
     },
     {
       id: 2,
       number: 2,
       title: "Reading Analysis1",
-      type: "READING_COMPREHENSION",
+      type: "reading_comprehension",
       description: "This section tests comprehension skills1",
     },
     {
       id: 3,
       number: 3,
       title: "Reading Analysis",
-      type: "READING_COMPREHENSION",
+      type: "reading_comprehension",
       description:
         "nemo voluptates omnis architecto, quisquam ipsam obcaecati sed accusantium magnam nostrum modi minima dolore! Reprehenderit, labore assumenda!",
     },
@@ -65,7 +65,7 @@ const page = ({ params }) => {
       id: sections.length + 1,
       number: 1,
       title: "New Section",
-      type: "READING_COMPREHENSION",
+      type: "reading_comprehension",
       description: "",
     };
     setSections([...sections, newSection]);
@@ -207,7 +207,13 @@ const page = ({ params }) => {
               </div>
 
               {/* Manage Questions Button */}
-              <Link href={`/admin/section/${section.id}`}>
+              <Link
+                href={
+                  section.type === "reading_comprehension"
+                    ? `/admin/section/${section.id}`
+                    : `/admin/section/${section.id}/logical-question`
+                }
+              >
                 <div className="mt-6">
                   <button className="w-full border border-indigo-200 text-indigo-600 hover:bg-indigo-50 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
                     Manage Questions

@@ -10,7 +10,7 @@ export default function Layout({children}) {
       {/* Mobile Nav Bar */}
       <div className="md:hidden bg-white shadow-md">
         <div className="flex items-center justify-between p-4">
-          <div className="font-semibold text-xl">Admin Panel</div>
+          <div className="font-semibold text-xl text-gray-800">Admin Panel</div>
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="text-gray-600 hover:text-gray-800"
@@ -37,7 +37,7 @@ export default function Layout({children}) {
         <div className={`${isOpen ? "block transition-transform duration-300 ease-in-out" : "hidden"} border-t`}>
           <nav className="px-4 py-2">
             <a
-              href="#"
+              href="/admin"
               className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg"
             >
               <svg
@@ -57,7 +57,7 @@ export default function Layout({children}) {
               Dashboard
             </a>
             <a
-              href="#"
+              href="/admin/exam"
               className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg"
             >
               <svg
@@ -133,7 +133,7 @@ export default function Layout({children}) {
           </div>
           <nav className="flex-1 px-4 py-2">
             <a
-              href="#"
+              href="/admin"
               className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg"
             >
               <svg
@@ -153,7 +153,7 @@ export default function Layout({children}) {
               Dashboard
             </a>
             <a
-              href="#"
+              href="/admin/exam"
               className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg"
             >
               <svg
@@ -176,7 +176,7 @@ export default function Layout({children}) {
               Exams
             </a>
             <a
-              href="#"
+              href="/admin/exam"
               className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg"
             >
               <svg

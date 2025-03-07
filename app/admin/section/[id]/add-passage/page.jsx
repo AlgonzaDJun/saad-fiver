@@ -1,12 +1,14 @@
 "use client";
 import Layout from "@/app/admin/components/SidebarNew";
+import { useParams } from "next/navigation";
 import React, { useState } from "react";
 
 const page = () => {
+  const { id } = useParams();
   const [formData, setFormData] = useState({
     title: "",
     text: "",
-    section: "",
+    section: id,
     difficulty: "medium", // Default value
     tags: [],
   });
@@ -80,7 +82,9 @@ const page = () => {
   return (
     <Layout>
       <div className="p-4">
-        <h1 className="text-black text-4xl font-semibold text-center">Create New Passage for relevant section</h1>
+        <h1 className="text-black text-4xl font-semibold text-center">
+          Create New Passage for relevant section
+        </h1>
         <form
           onSubmit={handleSubmit}
           className="space-y-4 max-w-lg mx-auto p-4 text-gray-900"
@@ -111,21 +115,6 @@ const page = () => {
               onChange={handleInputChange}
               className="mt-1 block w-full rounded-md border border-gray-300 p-2"
               rows="4"
-              required
-            />
-          </div>
-
-          {/* Input Section */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Section ID
-            </label>
-            <input
-              type="text"
-              name="section"
-              value={formData.section}
-              onChange={handleInputChange}
-              className="mt-1 block w-full rounded-md border border-gray-300 p-2"
               required
             />
           </div>
