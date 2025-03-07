@@ -2,9 +2,9 @@
 import React, { useState } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import CreateExamModal from "./exams/CreateExamModal";
+import CreateExamModal from "./exam/CreateExamModal";
 import { FaBars } from "react-icons/fa";
-import Exams from "./exams/page";
+import Exams from "./exam/page";
 import Settings from "./settings/page";
 import Logout from "./logout/page";
 import Dashboard from "./dashboard/page";

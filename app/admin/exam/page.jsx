@@ -7,6 +7,7 @@ import CreateExamModal from "./CreateExamModal";
 import { GoChevronRight } from "react-icons/go";
 import { AiFillEdit } from "react-icons/ai";
 import { MdDeleteForever } from "react-icons/md";
+import Layout from "../components/SidebarNew";
 
 const Exams = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -215,6 +216,10 @@ const Exams = () => {
         onSubmit={handleCreateExam}
       />
     </div>
+
+    // <Layout>
+    //   <div className="p-10 text-black">Please select Exam</div>
+    // </Layout>
   );
 };
 
