@@ -134,7 +134,7 @@ const page = ({ params }) => {
           ) : (
             sections.map((section) => (
               <div
-                key={section.id}
+                key={section._id}
                 className="bg-white rounded-lg shadow p-4 md:p-6"
               >
                 <div className="flex flex-col md:flex-row items-start justify-between">
@@ -162,7 +162,7 @@ const page = ({ params }) => {
                     </div>
                     <div>
                       <h3 className="text-xl font-medium text-gray-800">
-                        {section.title}
+                        {section.name}
                       </h3>
                       <p className="text-gray-500 mt-2">
                         {section.description}

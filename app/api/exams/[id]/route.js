@@ -22,7 +22,7 @@ export const GET = async (req, { params }) => {
       );
     }
 
-    const data = await Exam.findById(id);
+    const data = await Exam.findById(id).populate("sections").exec();
 
     if (!data) {
       return NextResponse.json(
