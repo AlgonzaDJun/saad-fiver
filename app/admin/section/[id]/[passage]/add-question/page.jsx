@@ -1,11 +1,22 @@
 "use client";
+import LoadingScreen from "@/app/admin/components/LoadingScreen";
 import Layout from "@/app/admin/components/SidebarNew";
+import { fetcher } from "@/app/admin/utils/fetcher";
+import axios from "axios";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
+import useSWR from "swr";
 
 const page = () => {
   const { id, passage } = useParams();
+
+  const { data, error, isLoading, mutate } = useSWR(
+    process.env.NEXT_PUBLIC_API_URL + "/passages/" + passage,
+    fetcher
+  );
+
+  // console.log(data)
 
   const [formData, setFormData] = useState({
     questionContent: "",
@@ -26,7 +37,10 @@ const page = () => {
 
   const [errors, setErrors] = useState({});
 
-  const handleSubmit = (e) => {
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState([]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
@@ -43,8 +57,27 @@ const page = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("Form submitted:", formData);
-      setShowModal(false);
+      try {
+        await axios.post(
+          process.env.NEXT_PUBLIC_API_URL + "/questions",
+          formData
+        );
+
+        setIsSuccess(true);
+
+        setTimeout(() => {
+          setIsSuccess(false);
+          window.location.href = `/admin/section/${id}`;
+        }, 2000);
+      } catch (error) {
+        if (error.response) {
+          setErrorMessage(
+            error.response.data.errors || [
+              { message: error.response.data.message },
+            ]
+          );
+        }
+      }
     }
   };
 
@@ -78,6 +111,7 @@ const page = () => {
 
   return (
     <Layout>
+      {isLoading && <LoadingScreen />}
       <div className="p-4 text-black">
         <div
           key={1}
@@ -89,15 +123,12 @@ const page = () => {
                 1
               </div>
               <h3 className="text-lg sm:text-xl font-medium text-gray-800">
-                Passage 1
+                {data && data.data ? data.data.title : "Loading..."}
               </h3>
             </div>
           </div>
-          <p className="text-gray-600 mb-4 text-sm sm:text-base line-clamp-2">
-            The following passage was written in the mid-1990s. Evidence that
-            the earth's atmosphere has warmed has become quite compelling, in
-            part because it has been reinforced recently by the development of
-            accurate...
+          <p className="text-gray-600 mb-4 text-sm sm:text-base">
+            {data && data.data ? data.data.text : "Loading..."}
           </p>
         </div>
         <div className="flex items-center justify-center p-4">
@@ -349,6 +380,34 @@ const page = () => {
                     }
                   />
                 </div>
+                {isSuccess && (
+                  <div role="alert" className="alert alert-success">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 shrink-0 stroke-current"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>Success create new question!</span>
+                  </div>
+                )}
+
+                {errorMessage &&
+                  errorMessage.map((error) => (
+                    <div
+                      key={error}
+                      className="bg-red-100 text-red-600 p-4 rounded-lg mb-4"
+                    >
+                      Error: {error.message}
+                    </div>
+                  ))}
 
                 {/* Bottom Toolbar */}
                 <div className="flex justify-end items-center pt-4">

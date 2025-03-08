@@ -39,6 +39,7 @@ export const POST = async (request) => {
 
     const checkSequence = await Question.findOne({
       section: validatedData.data.section,
+      passage: validatedData.data.passage,
       sequenceNumber: validatedData.data.sequenceNumber,
     });
 

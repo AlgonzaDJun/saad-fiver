@@ -312,20 +312,20 @@ const page = () => {
                 >
                   <div className="flex items-start gap-3 sm:gap-4">
                     <div className="bg-indigo-100 text-indigo-800 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 text-sm sm:text-base">
-                      {question.number}
+                      {question.sequenceNumber}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                         <p className="text-gray-900 text-sm sm:text-base">
-                          {question.text}
+                          {question.questionContent}
                         </p>
                         <div className="flex flex-row sm:flex-col md:flex-row items-start sm:items-end md:items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
                           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 order-2 sm:order-1">
                             <span className="text-xs text-gray-500 hidden sm:inline">
-                              {question.questionId}
+                              {question._id}
                             </span>
                             <span className="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded text-xs sm:text-sm whitespace-nowrap">
-                              {question.difficulty}
+                              {question.severity}
                             </span>
                           </div>
                           <div className="flex gap-1 sm:gap-2 order-1 sm:order-2">
