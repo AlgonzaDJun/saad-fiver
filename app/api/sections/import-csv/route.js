@@ -8,6 +8,7 @@ import connectDB from "@/libs/db";
 import { NextResponse } from "next/server";
 import { IncomingForm } from "formidable";
 import Exam from "@/models/exam";
+import { Readable } from "stream";
 
 // export const config = {
 //   api: {
@@ -31,18 +32,41 @@ export async function POST(request) {
 
     console.log("Uploaded file:", file.name, file.size);
 
-    // Simpan file sementara
-    const filePath = `./tmp/${file.name}`;
+    // save file temporary
+    // const filePath = `./tmp/${file.name}`;
+    // const fileBuffer = await file.arrayBuffer();
+    // fs.writeFileSync(filePath, Buffer.from(fileBuffer));
+
+    // const results = [];
+
+    // // Baca file CSV
+    // return new Promise((resolve, reject) => {
+    //   fs.createReadStream(filePath)
+    //     .pipe(csv({ separator: ";" })) // Gunakan separator ;
+    //     .on("data", (data) => results.push(data))
+    //     .on("end", async () => {
+
+    // ahead is save file temporary
+
+    // Konversi file ke buffer
     const fileBuffer = await file.arrayBuffer();
-    fs.writeFileSync(filePath, Buffer.from(fileBuffer));
+    const buffer = Buffer.from(fileBuffer);
 
     const results = [];
 
-    // Baca file CSV
+    // Buat stream dari buffer
+    const readableStream = new Readable();
+    readableStream.push(buffer);
+    readableStream.push(null); // Tandai akhir stream
+
+    // Baca file CSV langsung dari buffer
     return new Promise((resolve, reject) => {
-      fs.createReadStream(filePath)
-        .pipe(csv({ separator: ";" })) // Gunakan separator ;
-        .on("data", (data) => results.push(data))
+      readableStream
+        .pipe(csv({ separator: ";" }))
+        .on("data", (data) => {
+          console.log("Parsed row:", data);
+          results.push(data);
+        })
         .on("end", async () => {
           try {
             await connectDB(); // Hubungkan ke MongoDB
@@ -148,7 +172,7 @@ export async function POST(request) {
             }
 
             // Hapus file sementara
-            fs.unlinkSync(filePath);
+            // fs.unlinkSync(filePath);
 
             // Return success response
             resolve(
@@ -161,7 +185,7 @@ export async function POST(request) {
             );
           } catch (error) {
             // Hapus file sementara jika terjadi error
-            fs.unlinkSync(filePath);
+            // fs.unlinkSync(filePath);
 
             // Return error response
             reject(
@@ -174,7 +198,7 @@ export async function POST(request) {
         })
         .on("error", (error) => {
           // Hapus file sementara jika terjadi error
-          fs.unlinkSync(filePath);
+          // fs.unlinkSync(filePath);
 
           // Return error response
           reject(
