@@ -5,13 +5,14 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "axios";
 import LoadingScreen from "../../components/LoadingScreen";
+import { useParams } from "next/navigation";
 
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
-const page = ({ params }) => {
-  const unwrappedParams = use(params);
+const page = () => {
+  const { id } = useParams();
   const { data, error, isLoading, mutate } = useSWR(
-    process.env.NEXT_PUBLIC_API_URL + "/exams/" + unwrappedParams.id,
+    process.env.NEXT_PUBLIC_API_URL + "/exams/" + id,
     fetcher
   );
 
@@ -21,10 +22,10 @@ const page = ({ params }) => {
   // console.log(data)
   const [formData, setFormData] = useState({
     name: "",
-    type: "",
+    type: "reading_comprehension",
     description: "",
     estimatedTime: 1,
-    exam: unwrappedParams.id,
+    exam: id,
   });
 
   const handleChange = (e) => {
@@ -39,6 +40,7 @@ const page = ({ params }) => {
 
   const handdleSubmit = async (e) => {
     e.preventDefault();
+    // console.log(formData);
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/sections`, formData);
 
@@ -69,7 +71,13 @@ const page = ({ params }) => {
       );
       mutate();
       setErrorMessage([]);
-      setFormData({ name: "", type: "", description: "", estimatedTime: 1 });
+      setFormData({
+        ...formData,
+        name: "",
+        type: "reading_comprehension",
+        description: "",
+        estimatedTime: 1,
+      });
       // setShowModal(false);
       document.getElementById("close_modal").click();
     } catch (error) {
@@ -103,17 +111,6 @@ const page = ({ params }) => {
     }
   }, [data]);
 
-  const addNewSection = () => {
-    const newSection = {
-      id: sections.length + 1,
-      number: 1,
-      title: "New Section",
-      type: "reading_comprehension",
-      description: "",
-    };
-    setSections([...sections, newSection]);
-  };
-
   const deleteSection = (id) => {
     setSections(sections.filter((section) => section.id !== id));
   };
@@ -126,9 +123,33 @@ const page = ({ params }) => {
       type: section.type,
       description: section.description,
       estimatedTime: section.estimatedTime,
-      exam: unwrappedParams.id,
+      exam: id,
     });
     document.getElementById("my_modal_5").showModal();
+  };
+
+  const [idToDelete, setIdToDelete] = useState(null);
+
+  const confirmDelete = (id) => {
+    const modal = document.getElementById("delete_section_modal");
+    modal.showModal();
+    setIdToDelete(id);
+  };
+
+  const deleteExam = async () => {
+    try {
+      setErrorMessage([]);
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/sections/${idToDelete}`
+      );
+      mutate();
+      document.getElementById("delete_section_modal").close();
+      setIdToDelete(null);
+    } catch (error) {
+      // alert("Error deleting exam");
+      setErrorMessage(error.response.data.errors);
+      // console.error("Error deleting exam:", error);
+    }
   };
 
   return (
@@ -146,8 +167,9 @@ const page = ({ params }) => {
                 // empty form data
                 setEditSection(false);
                 setFormData({
+                  ...formData,
                   name: "",
-                  type: "",
+                  type: "reading_comprehension",
                   description: "",
                   estimatedTime: 1,
                 });
@@ -273,8 +295,8 @@ const page = ({ params }) => {
                       </svg>
                     </button>
                     <button
-                      className="text-gray-400 hover:text-red-600"
-                      onClick={() => deleteSection(section.id)}
+                      className="text-gray-400 hover:text-red-600 cursor-pointer"
+                      onClick={() => confirmDelete(section._id)}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -331,6 +353,28 @@ const page = ({ params }) => {
       </div>
 
       {/* modal */}
+
+      <dialog id="delete_section_modal" className="modal">
+        <div className="modal-box bg-white text-black">
+          <h3 className="font-bold text-lg">
+            Are you sure you want to delete this data?
+          </h3>
+          <div className="flex justify-end mt-10 gap-5">
+            <button className="mr-5" onClick={() => deleteExam()}>
+              <a href="#" className="btn">
+                Yes
+              </a>
+            </button>
+            <button
+              onClick={() => document.getElementById("delete_section_modal").close()}
+            >
+              <a href="#" className="btn" id="no_delete">
+                No
+              </a>
+            </button>
+          </div>
+        </div>
+      </dialog>
 
       {/* Open the modal using document.getElementById('ID').showModal() method */}
       <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">

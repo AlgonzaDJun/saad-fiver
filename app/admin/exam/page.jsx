@@ -72,6 +72,70 @@ export default function page() {
     }
   };
 
+  const [idToDelete, setIdToDelete] = useState(null);
+
+  const confirmDelete = (id) => {
+    const modal = document.getElementById("confirm_modal");
+    modal.showModal();
+    setIdToDelete(id);
+  };
+
+  const deleteExam = async () => {
+    try {
+      setErrorMessage([]);
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/exams/${idToDelete}`
+      );
+      mutate();
+      document.getElementById("confirm_modal").close();
+      setIdToDelete(null);
+    } catch (error) {
+      // alert("Error deleting exam");
+      setErrorMessage(error.response.data.errors);
+      // console.error("Error deleting exam:", error);
+    }
+  };
+
+  const [isBeingEdited, setIsBeingEdited] = useState(false);
+
+  const handleEdit = (exam) => {
+    setIsBeingEdited(true);
+    setForm({
+      id: exam._id,
+      title: exam.title,
+      description: exam.description,
+      totalQuestions: exam.totalQuestions,
+      totalTime: exam.totalTime,
+      difficulty: exam.difficulty,
+    });
+    setShowModal(true);
+  };
+
+  const updateExam = async (e) => {
+    e.preventDefault();
+    // console.log(form)
+    try {
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/exams/${form.id}`,
+        form
+      );
+      mutate();
+      setErrorMessage([]);
+      setForm({ title: "", description: "", totalQuestions: 0, totalTime: 0 });
+      setShowModal(false);
+      setIsBeingEdited(false);
+    } catch (error) {
+      setShowModal(false);
+
+      // Reset form
+      console.error("Error updating exam:", error.response.data);
+
+      if (error.response) {
+        setErrorMessage(error.response.data.errors);
+      }
+    }
+  };
+
   return (
     <Layout>
       <div className="min-h-screen bg-gray-50 p-6 text-black">
@@ -126,7 +190,10 @@ export default function page() {
                 <div className="flex justify-between items-start mb-4">
                   <h2 className="text-lg font-medium">{exam.title}</h2>
                   <div className="flex gap-2">
-                    <button className="text-gray-400 hover:text-indigo-600">
+                    <button
+                      className="text-gray-400 hover:text-indigo-600 cursor-pointer"
+                      onClick={() => handleEdit(exam)}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="18"
@@ -142,7 +209,10 @@ export default function page() {
                         <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                       </svg>
                     </button>
-                    <button className="text-gray-400 hover:text-red-600">
+                    <button
+                      className="text-gray-400 hover:text-red-600 cursor-pointer"
+                      onClick={() => confirmDelete(exam._id)}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="18"
@@ -186,6 +256,31 @@ export default function page() {
             ))}
           </div>
 
+          {/* modal confirm hapus */}
+          <dialog id="confirm_modal" className="modal">
+            <div className="modal-box bg-white text-black">
+              <h3 className="font-bold text-lg">
+                Are you sure you want to delete this data?
+              </h3>
+              <div className="flex justify-end mt-10 gap-5">
+                <button className="mr-5" onClick={() => deleteExam()}>
+                  <a href="#" className="btn">
+                    Yes
+                  </a>
+                </button>
+                <button
+                  onClick={() =>
+                    document.getElementById("confirm_modal").close()
+                  }
+                >
+                  <a href="#" className="btn" id="no_delete">
+                    No
+                  </a>
+                </button>
+              </div>
+            </div>
+          </dialog>
+
           {/* Create Exam Modal */}
           {showModal && (
             <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center p-4">
@@ -213,7 +308,9 @@ export default function page() {
                       </svg>
                     </button>
                   </div>
-                  <form className="space-y-4" onSubmit={handleSubmit}>
+                  <form className="space-y-4" onSubmit={
+                    isBeingEdited ? updateExam : handleSubmit
+                  }>
                     <div>
                       <label className="block mb-1 font-medium">
                         Exam Title
@@ -293,7 +390,9 @@ export default function page() {
                         type="submit"
                         className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
                       >
-                        Create Exam
+                        {
+                          isBeingEdited ? "Update Exam" : "Create Exam"
+                        }
                       </button>
                     </div>
                   </form>
