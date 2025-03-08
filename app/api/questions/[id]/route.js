@@ -70,11 +70,17 @@ export const PUT = async (request, { params }) => {
       );
     }
 
-    const checkSequence = await Question.findOne({
+    const query = {
       section: validatedData.data.section,
       sequenceNumber: validatedData.data.sequenceNumber,
       _id: { $ne: id },
-    });
+    }
+
+    if(validatedData.data.passage) {
+      query.passage = validatedData.data.passage;
+    }
+
+    const checkSequence = await Question.findOne(query);
 
     // check sequence number tidak boleh duplikat
     if (checkSequence) {
