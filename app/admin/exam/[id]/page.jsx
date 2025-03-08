@@ -6,11 +6,13 @@ import useSWR from "swr";
 import axios from "axios";
 import LoadingScreen from "../../components/LoadingScreen";
 import { useParams } from "next/navigation";
+import { ImportModal } from "../../components/ImportModal";
 
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 const page = () => {
   const { id } = useParams();
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const { data, error, isLoading, mutate } = useSWR(
     process.env.NEXT_PUBLIC_API_URL + "/exams/" + id,
     fetcher
@@ -155,6 +157,13 @@ const page = () => {
   return (
     // <div className="min-h-screen bg-gray-50">
     <Layout>
+      {isImportModalOpen && (
+        <ImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          exam={id}
+        />
+      )}
       <div className="max-w-6xl mx-auto p-4">
         {isLoading && <LoadingScreen />}
 
@@ -194,7 +203,10 @@ const page = () => {
               </svg>
               Add New Section
             </button>
-            <button className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors w-full md:w-auto justify-center">
+            <button
+              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors w-full md:w-auto justify-center"
+              onClick={() => setIsImportModalOpen(true)}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -366,7 +378,9 @@ const page = () => {
               </a>
             </button>
             <button
-              onClick={() => document.getElementById("delete_section_modal").close()}
+              onClick={() =>
+                document.getElementById("delete_section_modal").close()
+              }
             >
               <a href="#" className="btn" id="no_delete">
                 No

@@ -1,11 +1,22 @@
 "use client";
 
+import LoadingScreen from "@/app/admin/components/LoadingScreen";
 import Layout from "@/app/admin/components/SidebarNew";
+import { fetcher } from "@/app/admin/utils/fetcher";
+import axios from "axios";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 
 export default function page() {
   const { id } = useParams();
+
+  const { data, error, isLoading, mutate } = useSWR(
+    process.env.NEXT_PUBLIC_API_URL + "/sections/" + id,
+    fetcher
+  );
+
+  // console.log(data);
 
   const [showModal, setShowModal] = useState(false);
 
@@ -14,7 +25,7 @@ export default function page() {
     questionType: "",
     questionSubType: "",
     severity: "",
-    sequenceNumber: "9",
+    sequenceNumber: 1,
     choices: [
       {
         text: "",
@@ -27,8 +38,17 @@ export default function page() {
   });
 
   const [errors, setErrors] = useState({});
+  const [errorMessage, setErrorMessage] = useState([]);
 
-  const handleSubmit = (e) => {
+  const [isBeingEdited, setIsBeingEdited] = useState(false);
+
+  const handleEdit = (question) => {
+    setFormData(question);
+    setIsBeingEdited(true);
+    setShowModal(true);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
@@ -46,8 +66,70 @@ export default function page() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("Form submitted:", formData);
-      setShowModal(false);
+      // console.log("Form submitted:", formData);
+      try {
+        if (isBeingEdited) {
+          await axios.put(
+            `${process.env.NEXT_PUBLIC_API_URL}/questions/${formData._id}`,
+            formData
+          );
+        } else {
+          await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/questions`,
+            formData
+          );
+        }
+        setFormData({
+          questionContent: "",
+          questionType: "",
+          questionSubType: "",
+          severity: "",
+          sequenceNumber: 1,
+          choices: [
+            {
+              text: "",
+              isCorrect: false,
+            },
+          ],
+          answerNote: "",
+          section: id,
+        });
+        setErrorMessage([]);
+        setShowModal(false);
+        mutate();
+      } catch (error) {
+        if (error.response) {
+          setErrorMessage(
+            error.response.data.errors || [
+              { message: error.response.data.message },
+            ]
+          );
+        }
+      }
+    }
+  };
+
+  const [idToDelete, setIdToDelete] = useState(null);
+
+  const confirmDelete = (id) => {
+    const modal = document.getElementById("delete_question_mal");
+    modal.showModal();
+    setIdToDelete(id);
+  };
+
+  const deletePassageAndQuestion = async () => {
+    try {
+      setErrorMessage([]);
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/questions/${idToDelete}`
+      );
+      mutate();
+      document.getElementById("delete_question_mal").close();
+      setIdToDelete(null);
+    } catch (error) {
+      // alert("Error deleting exam");
+      setErrorMessage(error.response.data.errors);
+      // console.error("Error deleting exam:", error);
     }
   };
 
@@ -79,67 +161,34 @@ export default function page() {
     }));
   };
 
-  const [questions] = useState([
+  const [questions, setQuestions] = useState([
     {
       id: 1,
       number: 1,
-      text: "If penguins and turtles live in the sea, and lions and tigers live on land, which of the following is most likely true?",
+      description: "Example description",
       difficulty: "MODERATE",
-      questionId: "67be2bc2b7b84ba2b98c5ce9",
-    },
-    {
-      id: 2,
-      number: 2,
-      text: "If all birds can fly except penguins, and penguins are classified as birds, which of the following must be true?",
-      difficulty: "MODERATE",
-      questionId: "67be2bc2b7b84ba2b98c5ce9",
-    },
-    {
-      id: 3,
-      number: 3,
-      text: "If some mammals lay eggs and all mammals are warm-blooded, which of the following conclusions is valid?",
-      difficulty: "MODERATE",
-      questionId: "67be2bc2b7b84ba2b98c5ce9",
-    },
-    {
-      id: 4,
-      number: 4,
-      text: "If A is always taller than B, and B is sometimes taller than C, which of the following must be true?",
-      difficulty: "MODERATE",
-      questionId: "67be2bc2b7b84ba2b98c5ce9",
-    },
-    {
-      id: 5,
-      number: 5,
-      text: "If no reptiles can regulate their body temperature internally and all reptiles are cold-blooded, which of the following statements is most logically correct?",
-      difficulty: "MODERATE",
-      questionId: "67be2bc2b7b84ba2b98c5ce9",
-    },
-    {
-      id: 6,
-      number: 6,
-      text: "If all squares are rectangles, but not all rectangles are squares, which of the following must be false?",
-      difficulty: "MODERATE",
-      questionId: "67be2bc2b7b84ba2b98c5ce9",
-    },
-    {
-      id: 7,
-      number: 7,
-      text: "If every employee in a company earns more than $2000 per month and John earns $1800 per month, what can be concluded?",
-      difficulty: "MODERATE",
-      questionId: "67be2bc2b7b84ba2b98c5ce9",
+      _id: "67be2bc2b7b84ba2b98c5ce9",
     },
   ]);
+
+  useEffect(() => {
+    if (data && data.data) {
+      setQuestions(data.data.questions);
+    }
+  }, [data]);
 
   return (
     <Layout>
       <div className="p-6 max-w-7xl mx-auto text-black">
+        {isLoading && <LoadingScreen />}
         {/* Header */}
         <div className="flex justify-between items-start mb-6 bg-white  p-3 rounded">
           <div>
-            <h1 className="text-2xl font-semibold mb-2">Logical Reasoning</h1>
+            <h1 className="text-2xl font-semibold mb-2">
+              {data && data.data ? data.data.name : "Loading..."}
+            </h1>
             <p className="text-gray-600">
-              This section tests comprehension skills
+              {data && data.data ? data.data.description : "Loading..."}
             </p>
             <div className="mt-2">
               <span className="bg-indigo-100 text-indigo-800 text-sm px-3 py-1 rounded-full">
@@ -148,7 +197,27 @@ export default function page() {
             </div>
           </div>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setIsBeingEdited(false);
+              setFormData({
+                questionContent: "",
+                questionType: "",
+                questionSubType: "",
+                severity: "",
+                sequenceNumber: 1,
+                choices: [
+                  {
+                    text: "",
+                    isCorrect: false,
+                  },
+                ],
+                answerNote: "",
+                // passage: passage,
+                section: id,
+              });
+
+              setShowModal(true);
+            }}
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
           >
             <svg
@@ -175,72 +244,83 @@ export default function page() {
             Questions
           </h2>
           <div className="space-y-3 sm:space-y-4 max-h-[calc(100vh-400px)] overflow-y-auto">
-            {questions.map((question) => (
-              <div
-                key={question.id}
-                className="bg-white rounded-lg shadow p-4 sm:p-6"
-              >
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="bg-indigo-100 text-indigo-800 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 text-sm sm:text-base">
-                    {question.number}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
-                      <p className="text-gray-900 text-sm sm:text-base">
-                        {question.text}
-                      </p>
-                      <div className="flex flex-row sm:flex-col md:flex-row items-start sm:items-end md:items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 order-2 sm:order-1">
-                          <span className="text-xs text-gray-500 hidden sm:inline">
-                            {question.questionId}
-                          </span>
-                          <span className="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded text-xs sm:text-sm whitespace-nowrap">
-                            {question.difficulty}
-                          </span>
-                        </div>
-                        <div className="flex gap-1 sm:gap-2 order-1 sm:order-2">
-                          <button className="text-gray-400 hover:text-indigo-600 p-1">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="sm:w-[18px] sm:h-[18px]"
+            {questions.length === 0 ? (
+              <div className="bg-white rounded-lg shadow p-4 md:p-6">
+                <h3 className="text-xl font-medium text-gray-800">
+                  No Question Found
+                </h3>
+              </div>
+            ) : (
+              questions.map((question) => (
+                <div
+                  key={question._id}
+                  className="bg-white rounded-lg shadow p-4 sm:p-6"
+                >
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="bg-indigo-100 text-indigo-800 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 text-sm sm:text-base">
+                      {question.sequenceNumber}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+                        <p className="text-gray-900 text-sm sm:text-base">
+                          {question.questionContent}
+                        </p>
+                        <div className="flex flex-row sm:flex-col md:flex-row items-start sm:items-end md:items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 order-2 sm:order-1">
+                            <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 sm:inline rounded">
+                              {question._id}
+                            </span>
+                            <span className="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded text-xs sm:text-sm whitespace-nowrap">
+                              {question.severity}
+                            </span>
+                          </div>
+                          <div className="flex gap-1 sm:gap-2 order-1 sm:order-2">
+                            <button
+                              className="text-gray-400 hover:text-indigo-600 p-1 cursor-pointer"
+                              onClick={() => handleEdit(question)}
                             >
-                              <path d="M12 20h9" />
-                              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                            </svg>
-                          </button>
-                          <button className="text-gray-400 hover:text-red-600 p-1">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="sm:w-[18px] sm:h-[18px]"
-                            >
-                              <path d="M3 6h18" />
-                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                            </svg>
-                          </button>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="sm:w-[18px] sm:h-[18px]"
+                              >
+                                <path d="M12 20h9" />
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                              </svg>
+                            </button>
+                            <button className="text-gray-400 hover:text-red-600 p-1 cursor-pointer" onClick={() => confirmDelete(question._id)}>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="sm:w-[18px] sm:h-[18px]"
+                              >
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -250,7 +330,9 @@ export default function page() {
             <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold">Create New Question</h2>
+                  <h2 className="text-xl font-semibold">
+                    {isBeingEdited ? "Edit Question" : "Add New Question"}
+                  </h2>
                   <button
                     onClick={() => setShowModal(false)}
                     className="text-gray-400 hover:text-gray-600"
@@ -400,7 +482,7 @@ export default function page() {
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
-                            sequenceNumber: e.target.value,
+                            sequenceNumber: parseInt(e.target.value),
                           }))
                         }
                       />
@@ -497,6 +579,16 @@ export default function page() {
                     />
                   </div>
 
+                  {errorMessage &&
+                    errorMessage.map((error) => (
+                      <div
+                        key={error}
+                        className="bg-red-100 text-red-600 p-4 rounded-lg mb-4"
+                      >
+                        Error: {error.message}
+                      </div>
+                    ))}
+
                   {/* Bottom Toolbar */}
                   <div className="flex justify-end items-center pt-4">
                     <button
@@ -516,7 +608,7 @@ export default function page() {
                       >
                         <path d="M20 6L9 17l-5-5" />
                       </svg>
-                      Create Question
+                      {isBeingEdited ? "Update Question" : "Create Question"}
                     </button>
                   </div>
                 </form>
@@ -524,6 +616,33 @@ export default function page() {
             </div>
           </div>
         )}
+
+        <dialog id="delete_question_mal" className="modal">
+          <div className="modal-box bg-white text-black">
+            <h3 className="font-bold text-lg">
+              Are you sure you want to delete this data?
+            </h3>
+            <div className="flex justify-end mt-10 gap-5">
+              <button
+                className="mr-5"
+                onClick={() => deletePassageAndQuestion()}
+              >
+                <a href="#" className="btn">
+                  Yes
+                </a>
+              </button>
+              <button
+                onClick={() =>
+                  document.getElementById("delete_question_mal").close()
+                }
+              >
+                <a href="#" className="btn" id="no_delete">
+                  No
+                </a>
+              </button>
+            </div>
+          </div>
+        </dialog>
       </div>
     </Layout>
   );

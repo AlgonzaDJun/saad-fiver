@@ -141,8 +141,8 @@ const page = () => {
     }
   };
 
-  const [idToDelete, setIdToDelete] = useState(null);
   const [isQuestion, setIsQuestion] = useState(false);
+  const [idToDelete, setIdToDelete] = useState(null);
 
   const confirmDelete = (id, isQuestion) => {
     const modal = document.getElementById("delete_passage_modal");
@@ -451,7 +451,7 @@ const page = () => {
                                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                               </svg>
                             </button>
-                            <button className="text-gray-400 hover:text-red-600 p-1">
+                            <button className="text-gray-400 hover:text-red-600 p-1 cursor-pointer" onClick={() => confirmDelete(question._id, true)}>
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="16"
