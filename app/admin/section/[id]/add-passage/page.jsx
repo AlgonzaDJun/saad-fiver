@@ -1,5 +1,6 @@
 "use client";
 import Layout from "@/app/admin/components/SidebarNew";
+import axios from "axios";
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
 
@@ -45,46 +46,70 @@ const page = () => {
     }
   };
 
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrrorMessage] = useState([]);
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // console.log(formData);
 
     // Kirim data ke API atau simpan ke database
-    // try {
-    //   const response = await fetch("/api/passages", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(formData),
-    //   });
-
-    //   if (response.ok) {
-    //     alert("Passage created successfully!");
-    //     // Reset form
-    //     setFormData({
-    //       title: "",
-    //       text: "",
-    //       section: "",
-    //       difficulty: "medium",
-    //       tags: [],
-    //     });
-    //     setTagInput("");
-    //   } else {
-    //     alert("Failed to create passage.");
-    //   }
-    // } catch (error) {
-    //   console.error("Error:", error);
-    //   alert("An error occurred.");
-    // }
+    try {
+      // use axios
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/passages`, formData);
+      setIsSuccess(true)
+      setTimeout(() => {
+        // goto /sections/id
+        window.location.href = `/admin/section/${id}`;
+      }, 2000);
+    } catch (error) {
+      // console.error("Error:", error);
+      if (error.response) {
+        setErrrorMessage(error.response.data.errors);
+        // console.error("Error:", error.response.data.errors);
+      }
+    }
   };
 
   return (
     <Layout>
-      <div className="p-4">
-        <h1 className="text-black text-4xl font-semibold text-center">
+      <div className="p-4 mx-auto my-auto ">
+        <h1 className="text-black text-4xl font-semibold text-center md:mt-16">
           Create New Passage for relevant section
         </h1>
+
+        {isSuccess && (
+          <div role="alert" className="alert alert-success">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>Success create passage</span>
+          </div>
+        )}
+
+        {errorMessage.length > 0 && (
+          <div role="alert" className="alert alert-error">
+            <ul>
+              {errorMessage.map((error, index) => (
+                <li key={index}>{error.message}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Form */}
+
         <form
           onSubmit={handleSubmit}
           className="space-y-4 max-w-lg mx-auto p-4 text-gray-900"
@@ -100,7 +125,6 @@ const page = () => {
               value={formData.title}
               onChange={handleInputChange}
               className="mt-1 block w-full rounded-md border border-gray-300 p-2"
-              required
             />
           </div>
 
@@ -115,7 +139,6 @@ const page = () => {
               onChange={handleInputChange}
               className="mt-1 block w-full rounded-md border border-gray-300 p-2"
               rows="4"
-              required
             />
           </div>
 
