@@ -104,7 +104,11 @@ export function ImportModal({ isOpen, onClose, exam }) {
       // Reset state dan tutup modal
       setFile(null);
       onClose();
-      window.location.reload();
+      alert("File uploaded successfully");
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("Failed to upload file. Please try again.");
